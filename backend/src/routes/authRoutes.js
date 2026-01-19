@@ -1,6 +1,15 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { register, login, getCurrentUser, updateProfile, requestEmailVerification, checkEmailVerification } from '../controllers/authController.js';
+// IMPORANT: specific adminLogin controller added to imports
+import { 
+  register, 
+  login, 
+  adminLogin, 
+  getCurrentUser, 
+  updateProfile, 
+  requestEmailVerification, 
+  checkEmailVerification 
+} from '../controllers/authController.js';
 import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -28,7 +37,17 @@ router.post(
   register
 );
 
-// Login
+// Admin Login (New Route)
+router.post(
+  '/admin/login',
+  [
+    body('adminId').notEmpty().withMessage('Admin ID is required'),
+    body('password').notEmpty().withMessage('Password is required'),
+  ],
+  adminLogin
+);
+
+// User Login
 router.post(
   '/login',
   [

@@ -1,7 +1,62 @@
 import User from '../models/User.js';
+import Admin from '../models/Admin.js'; // <--- NEW: Import Admin Model
 import { generateToken } from '../utils/jwt.js';
 import { validationResult } from 'express-validator';
 import { generateVerificationToken, sendVerificationEmail, verifyToken } from '../utils/emailService.js';
+
+// --- UPDATED: Admin Login ---
+export const adminLogin = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { adminId, password } = req.body;
+
+    // 1. Search in the ADMIN collection
+    // Checks if the input matches either 'email' OR 'adminId'
+    const admin = await Admin.findOne({
+      $or: [{ email: adminId }, { adminId: adminId }]
+    }).select('+password');
+
+    if (!admin) {
+      return res.status(401).json({ message: 'Invalid Admin ID or password' });
+    }
+
+    // 2. Check Password
+    // Uses the comparePassword method defined in your Admin.js model
+    const isMatch = await admin.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid Admin ID or password' });
+    }
+
+    // 3. Update last login timestamp
+    admin.lastLogin = new Date();
+    await admin.save();
+
+    // 4. Generate Token
+    const token = generateToken(admin._id);
+
+    res.status(200).json({
+      message: 'Admin login successful',
+      token,
+      user: {
+        id: admin._id,
+        adminId: admin.adminId, // distinct field for admins
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        permissions: admin.permissions, // include permissions in response
+      },
+    });
+  } catch (error) {
+    console.error('Admin Login Error:', error);
+    res.status(500).json({ message: 'Server error during admin login' });
+  }
+};
+
+// --- EXISTING USER FUNCTIONS ---
 
 // Request email verification (send verification email)
 export const requestEmailVerification = async (req, res) => {
@@ -29,12 +84,10 @@ export const requestEmailVerification = async (req, res) => {
       return res.status(500).json({ message: 'Failed to send verification email' });
     }
 
-    // Store token in session/response for frontend to use (or you can store in a temp collection)
-    // For now, we'll just return success and the frontend will use the token from email
     res.status(200).json({
       message: 'Verification email sent successfully',
       email: email,
-      token: verificationToken, // Return token so frontend can verify locally or store
+      token: verificationToken,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -49,21 +102,16 @@ export const checkEmailVerification = async (req, res) => {
     console.log('checkEmailVerification called - email:', email, 'token length:', token?.length);
 
     if (!token || !email) {
-      console.log('Missing token or email');
       return res.status(400).json({ message: 'Token and email are required' });
     }
 
     // Verify the token against stored tokens
-    console.log('Verifying token...');
     const isValid = await verifyToken(token, email);
-    console.log('Token valid:', isValid);
 
     if (!isValid) {
-      console.log('Token verification failed');
       return res.status(400).json({ message: 'Invalid or expired verification token' });
     }
 
-    console.log('Email verification successful');
     res.status(200).json({
       message: 'Email verified successfully',
       email: email,
@@ -92,13 +140,12 @@ export const register = async (req, res) => {
     }
 
     // Create new user with email already verified
-    // (verification happened before account creation)
     user = new User({
       name,
       email,
       password,
       phone,
-      isEmailVerified: true, // Email is already verified before signup
+      isEmailVerified: true,
       emailVerificationToken: undefined,
       emailVerificationTokenExpiry: undefined,
     });
