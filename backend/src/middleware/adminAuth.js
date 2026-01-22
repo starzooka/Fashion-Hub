@@ -1,5 +1,5 @@
 import { verifyToken } from '../utils/jwt.js';
-import User from '../models/User.js';
+import Admin from '../models/Admin.js';
 
 export const adminMiddleware = async (req, res, next) => {
   try {
@@ -11,19 +11,19 @@ export const adminMiddleware = async (req, res, next) => {
 
     const decoded = verifyToken(token);
     
-    // Fetch user and check role
-    const user = await User.findById(decoded.id);
+    // Search in Admin collection using the ID from the token
+    const admin = await Admin.findById(decoded.id);
     
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+    if (!admin) {
+      return res.status(401).json({ message: 'Admin not found' });
     }
 
-    if (user.role !== 'admin') {
+    if (admin.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied. Admin only.' });
     }
 
     req.userId = decoded.id;
-    req.user = user;
+    req.admin = admin;
     next();
   } catch (error) {
     res.status(401).json({ message: 'Invalid token' });

@@ -1,5 +1,6 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore.js';
+import Sidebar from './Sidebar.jsx';
 import '../styles/layout.css';
 
 export default function AdminLayout({ children }) {
@@ -12,27 +13,38 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <div className="admin-layout">
-      <header className="admin-header">
-        <div className="header-content">
-          <Link to="/dashboard" className="logo">
-            <h1>Admin Portal</h1>
-          </Link>
+    <div className="admin-container">
+      {/* Left Sidebar */}
+      <Sidebar />
+
+      {/* Right Content Area */}
+      <div className="main-content-wrapper">
+        {/* Top Header */}
+        <header className="top-header">
+          <div className="header-search">
+            <span className="search-icon">🔍</span>
+            <input type="text" placeholder="Search inventory, orders..." />
+          </div>
 
           <div className="header-actions">
-            <span className="admin-name">👤 {user?.name}</span>
-            <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
+            <button className="icon-btn">🔔</button>
+            <div className="user-profile" onClick={handleLogout} title="Click to Logout">
+              <div className="avatar">
+                {user?.name?.charAt(0) || 'A'}
+              </div>
+              <div className="user-info">
+                <span className="name">{user?.name}</span>
+                <span className="role">Admin</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="admin-main">
-        <div className="container">
+        {/* Dynamic Page Content */}
+        <main className="page-content">
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

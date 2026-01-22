@@ -5,7 +5,7 @@ import useAuthStore from '../store/authStore.js';
 import '../styles/auth.css';
 
 export default function Login() {
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [credentials, setCredentials] = useState({ adminId: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -17,20 +17,28 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await authAPI.login(credentials);
+      const response = await authAPI.adminLogin(credentials);
       const { token, user } = response.data;
 
-      // Check if user is admin
+      // Double check role
       if (user.role !== 'admin') {
         setError('Access denied. Admin credentials required.');
         setLoading(false);
         return;
       }
 
+      // Save token specifically for axios interceptor
+      localStorage.setItem('adminToken', token);
+
+      // Update global auth state
       login(user, token);
+      
+      // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      console.error(err);
+      const errorMessage = err.response?.data?.message || err.message || 'Login failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,25 +56,29 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>Email</label>
+            <label htmlFor="adminId">Admin ID</label>
             <input
-              type="email"
-              value={credentials.email}
+              id="adminId"
+              type="text"
+              value={credentials.adminId}
               onChange={(e) =>
-                setCredentials({ ...credentials, email: e.target.value })
+                setCredentials({ ...credentials, adminId: e.target.value })
               }
+              placeholder="Enter Admin ID"
               required
             />
           </div>
 
           <div className="form-group">
-            <label>Password</label>
+            <label htmlFor="password">Password</label>
             <input
+              id="password"
               type="password"
               value={credentials.password}
               onChange={(e) =>
                 setCredentials({ ...credentials, password: e.target.value })
               }
+              placeholder="Enter Password"
               required
             />
           </div>

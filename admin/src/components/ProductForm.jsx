@@ -7,6 +7,7 @@ export default function ProductForm({ product, onClose }) {
     name: '',
     description: '',
     category: 'tops',
+    department: 'Unisex', // Changed from 'gender' to 'department'
     price: '',
     discountPrice: '',
     stock: '',
@@ -23,6 +24,7 @@ export default function ProductForm({ product, onClose }) {
         name: product.name,
         description: product.description,
         category: product.category,
+        department: product.department || 'Unisex', // Load existing department
         price: product.price,
         discountPrice: product.discountPrice || '',
         stock: product.stock,
@@ -114,8 +116,42 @@ export default function ProductForm({ product, onClose }) {
               >
                 <option value="tops">Tops</option>
                 <option value="bottoms">Bottoms</option>
+                <option value="footwear">Footwear</option>
+                <option value="sunglasses-frames">Sunglasses & Frames</option>
+                <option value="watches">Watches</option>
+                <option value="bags-trolleys">Bags & Trolleys</option>
+                <option value="jewelry">Jewelry</option>
+                <option value="fragrances">Fragrances & Perfumes</option>
+                <option value="electronics">Electronics</option>
                 <option value="accessories">Accessories</option>
               </select>
+            </div>
+          </div>
+
+          {/* New Row for Department & Stock */}
+          <div className="form-row">
+            <div className="form-group">
+              <label>Department *</label>
+              <select
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                required
+              >
+                <option value="Unisex">Unisex</option>
+                <option value="Men">Men</option>
+                <option value="Women">Women</option>
+                <option value="Kids">Kids</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Stock Quantity *</label>
+              <input
+                type="number"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                required
+              />
             </div>
           </div>
 
@@ -150,16 +186,6 @@ export default function ProductForm({ product, onClose }) {
                 onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
               />
             </div>
-
-            <div className="form-group">
-              <label>Stock *</label>
-              <input
-                type="number"
-                value={formData.stock}
-                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                required
-              />
-            </div>
           </div>
 
           <div className="form-group">
@@ -192,7 +218,7 @@ export default function ProductForm({ product, onClose }) {
           <div className="form-group">
             <label>Available Sizes</label>
             <div className="size-selector">
-              {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size => (
+              {['XS', 'S', 'M', 'L', 'XL', 'XXL', 'One Size', '38', '39', '40', '41', '42', '43', '44'].map(size => (
                 <button
                   key={size}
                   type="button"
@@ -213,7 +239,7 @@ export default function ProductForm({ product, onClose }) {
               onChange={(e) =>
                 setFormData({ ...formData, colors: e.target.value.split(',').map(c => c.trim()) })
               }
-              placeholder="Black, White, Blue"
+              placeholder="Black, White, Blue, Gold"
             />
           </div>
 

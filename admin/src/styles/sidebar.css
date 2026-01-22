@@ -1,0 +1,142 @@
+.sidebar {
+  background: white;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.sidebar-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+  gap: 0.8rem;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--text);
+  color: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.sidebar-header h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.sidebar-nav {
+  padding: 1.5rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.nav-item:hover {
+  background: var(--surface-alt);
+  color: var(--text);
+  transform: translateX(4px);
+}
+
+.nav-item.active {
+  background: rgba(14, 165, 233, 0.08);
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.nav-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.sidebar-footer {
+  padding: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.pro-card {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border-radius: 12px;
+  padding: 1.2rem;
+  color: white;
+  text-align: center;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+}
+
+.pro-card p {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.pro-card small {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  display: block;
+}
+
+@media (max-width: 1024px) {
+  .sidebar-header h2,
+  .sidebar-footer,
+  .nav-item {
+    font-size: 0; 
+  }
+  
+  .nav-item {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+  }
+  
+  .nav-item:hover {
+    transform: none;
+    background: var(--surface-alt);
+  }
+  
+  .nav-icon {
+    font-size: 1.4rem;
+    margin: 0;
+  }
+
+  .logo-icon {
+    margin: 0 auto;
+  }
+  
+  .sidebar-header {
+    justify-content: center;
+    padding: 0;
+  }
+}
