@@ -21,7 +21,7 @@ export default function Cart() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      setLoading(false);
     } else {
       fetchCart();
     }
@@ -81,6 +81,31 @@ export default function Cart() {
 
   if (loading) {
     return <div className="container loading">Loading cart...</div>;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="cart-page">
+        <div className="container">
+          <div className="empty-cart">
+            <h1>Please Log In to View Your Cart</h1>
+            <p style={{ fontSize: '1rem', marginBottom: '1.5rem', color: '#666' }}>
+              Sign in to access your shopping cart and complete your purchase.
+            </p>
+            <button onClick={() => navigate('/login')} className="continue-shopping-btn">
+              Go to Login
+            </button>
+            <button 
+              onClick={() => navigate('/products')} 
+              className="continue-shopping-btn"
+              style={{ marginTop: '0.5rem', background: '#f0f0f0', color: '#333' }}
+            >
+              Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!cart || cart.items.length === 0) {

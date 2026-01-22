@@ -5,25 +5,24 @@ import ProductCard from '../components/ProductCard.jsx';
 import '../styles/home.css';
 
 export default function Home() {
-  const [featured, setFeatured] = useState([]);
+  const [carouselProducts, setCarouselProducts] = useState([]);
+  const [bestSellers, setBestSellers] = useState([]);
+  const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [carouselIndex, setCarouselIndex] = useState(0);
   const navigate = useNavigate();
 
-  const categories = [
-    { key: 'tops', icon: '👕', title: 'Tops', description: 'Tees, knits, and shirts' },
-    { key: 'bottoms', icon: '👖', title: 'Bottoms', description: 'Denim, chinos, and skirts' },
-    { key: 'outerwear', icon: '🧥', title: 'Outerwear', description: 'Light layers and jackets' },
-    { key: 'accessories', icon: '🎒', title: 'Accessories', description: 'Bags, belts, and more' },
-  ];
-
   useEffect(() => {
-    fetchFeaturedProducts();
+    fetchHomeProducts();
   }, []);
 
-  const fetchFeaturedProducts = async () => {
+  const fetchHomeProducts = async () => {
     try {
-      const response = await productAPI.getAllProducts({ limit: 8 });
-      setFeatured(response.data.products);
+      const response = await productAPI.getAllProducts({ limit: 20 });
+      const products = response.data.products;
+      setCarouselProducts(products.slice(0, 8));
+      setBestSellers(products.slice(0, 6));
+      setTrending(products.slice(6, 12));
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -31,108 +30,123 @@ export default function Home() {
     }
   };
 
+  // Carousel auto-advance
+  useEffect(() => {
+    if (carouselProducts.length === 0) return;
+    const interval = setInterval(() => {
+      setCarouselIndex((prev) => {
+        const maxIndex = Math.max(0, carouselProducts.length - 4);
+        return prev >= maxIndex ? 0 : prev + 1;
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [carouselProducts.length]);
+
+  const handleCarouselPrev = () => {
+    setCarouselIndex((prev) => (prev === 0 ? Math.max(0, carouselProducts.length - 4) : prev - 1));
+  };
+
+  const handleCarouselNext = () => {
+    setCarouselIndex((prev) => {
+      const maxIndex = Math.max(0, carouselProducts.length - 4);
+      return prev >= maxIndex ? 0 : prev + 1;
+    });
+  };
+
   return (
     <div className="home">
-      <section className="hero">
-        <div className="container hero-grid">
-          <div className="hero-copy">
-            <p className="eyebrow">Fresh drop • Weekly</p>
-            <h1>Wear the future—built for everyday comfort.</h1>
-            <p className="lede">
-              Curated essentials with breathable fabrics, modular layers, and silhouettes that move with you.
-            </p>
-            <div className="hero-pills">
-              <span>Free shipping over $75</span>
-              <span>Easy 30-day returns</span>
-            </div>
-            <div className="hero-actions">
-              <button onClick={() => navigate('/products')} className="cta-btn">
-                Shop the drop
-              </button>
-              <button onClick={() => navigate('/products?category=outerwear')} className="ghost-btn">
-                Explore layers
-              </button>
-            </div>
-            <div className="hero-meta">
-              <div>
-                <strong>4000+</strong>
-                <span>Happy customers</span>
-              </div>
-              <div>
-                <strong>48h</strong>
-                <span>Dispatch window</span>
-              </div>
-              <div>
-                <strong>4.9★</strong>
-                <span>Quality rated</span>
-              </div>
-            </div>
-          </div>
-          <div className="hero-panel">
-            <div className="panel-tag">Monochrome capsule</div>
-            <div className="panel-body">
-              <h3>Layer light, move freely.</h3>
-              <p>Breathable knits, weather-ready shells, and modular accessories.</p>
-              <ul>
-                <li>Featherweight shell jacket</li>
-                <li>Structured everyday tote</li>
-                <li>Seamless ribbed base layer</li>
-              </ul>
-              <button onClick={() => navigate('/products?sort=new')}>View lookbook</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="categories">
+      {/* Carousel Section */}
+      <section className="carousel-section">
         <div className="container">
           <div className="section-header">
-            <div>
-              <p className="eyebrow">Shop smarter</p>
-              <h2>Dialed-in categories</h2>
-              <p className="lede">Versatile builds to layer, lounge, and live in.</p>
-            </div>
-            <button className="ghost-btn" onClick={() => navigate('/products')}>
-              Browse all
-            </button>
+            <h2>Featured Collection</h2>
           </div>
-          <div className="category-grid">
-            {categories.map((cat) => (
-              <div
-                key={cat.key}
-                className="category-card"
-                onClick={() => navigate(`/products?category=${cat.key}`)}
-              >
-                <div className="category-icon">{cat.icon}</div>
-                <h3>{cat.title}</h3>
-                <p>{cat.description}</p>
+
+          {!loading && carouselProducts.length > 0 && (
+            <div className="carousel-container">
+              <button onClick={handleCarouselPrev} className="carousel-btn carousel-btn-prev">
+                ❮
+              </button>
+              
+              <div className="carousel-wrapper">
+                <div className="carousel-track" style={{
+                  transform: `translateX(-${carouselIndex * 25}%)`
+                }}>
+                  {carouselProducts.map((product) => (
+                    <div key={product._id} className="carousel-slide">
+                      <ProductCard product={product} />
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
+
+              <button onClick={handleCarouselNext} className="carousel-btn carousel-btn-next">
+                ❯
+              </button>
+
+              <div className="carousel-dots">
+                {Array.from({ length: Math.max(1, carouselProducts.length - 3) }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`dot ${idx === carouselIndex ? 'active' : ''}`}
+                    onClick={() => setCarouselIndex(idx)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      <section className="featured-products">
+      {/* Best Sellers Section */}
+      <section className="best-sellers-section">
         <div className="container">
           <div className="section-header centered">
-            <div>
-              <p className="eyebrow">Editor’s picks</p>
-              <h2>Featured products</h2>
-              <p className="lede">Built to last, styled to move.</p>
-            </div>
+            <h2>Best Sellers</h2>
+            <p className="lede">Our most loved items by customers</p>
           </div>
           {loading ? (
             <p className="loading">Loading products...</p>
           ) : (
             <div className="products-grid">
-              {featured.map((product) => (
+              {bestSellers.map((product) => (
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>
           )}
-          <div className="view-all">
-            <button onClick={() => navigate('/products')} className="view-all-btn">
-              View All Products
+        </div>
+      </section>
+
+      {/* Trending Section */}
+      <section className="trending-section">
+        <div className="container">
+          <div className="section-header centered">
+            <h2>Trending Now</h2>
+            <p className="lede">What's popular this season</p>
+          </div>
+          {loading ? (
+            <p className="loading">Loading products...</p>
+          ) : (
+            <div className="products-grid">
+              {trending.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Explore More Section */}
+      <section className="explore-section">
+        <div className="container">
+          <div className="explore-content">
+            <h2>Explore More</h2>
+            <p>Discover our complete collection and find your perfect style.</p>
+            <button 
+              onClick={() => navigate('/products')} 
+              className="explore-btn"
+            >
+              Browse All Products
             </button>
           </div>
         </div>
